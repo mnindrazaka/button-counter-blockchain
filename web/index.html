@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #6B46C1 0%, #9333EA 50%, #EC4899 100%);
+        }
+
+        .count-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .count-btn {
+            background: rgba(147, 51, 234, 0.7);
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(147, 51, 234, 0.8);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(147, 51, 234, 0.3);
+        }
+
+        .count-circle {
+            text-align: center;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(30px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: 600;
+            color: white;
+            margin: 0 auto 40px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .count-btn:hover {
+            background: rgba(168, 85, 247, 0.8);
+            border-color: rgba(168, 85, 247, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(168, 85, 247, 0.4);
+        }
+
+        .your-gm {
+            font-size: 4rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            background: linear-gradient(45deg, #d1d1d1, #dec2fb, #e7e3f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            /* text-shadow: 0 4px 20px rgba(233, 121, 249, 0.3); */
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .container-btn {
+            display: flex;
+            flex-wrap: wrap;
+            flex-direction: row;
+            width: 100%;
+            height: 100%;
+            justify-content: space-around;
+        }
+
+        /* Loading Container */
+        .loading-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 280px;
+        }
+
+        .loading-container.show {
+            display: flex;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        /* Loading Text */
+        .loading-text {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 16px;
+            font-weight: 500;
+            animation: pulse-text 1.5s ease-in-out infinite;
+        }
+
+        /* Animations */
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes pulse-text {
+
+            0%,
+            100% {
+                opacity: 0.8;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        /* Content States */
+        .count-content.hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="count-container">
+        <h1 class="your-gm">YOUR COUNT</h1>
+        <div class="loading-container" id="loadingContainer">
+            <div class="loading-spinner"></div>
+            <div class="loading-text" id="loadingText">Loading...</div>
+        </div>
+        <div class="count-content" id="countContent">
+            <input class="count-circle" type="text" name="" id="counter" readonly>
+            <div class="container-btn">
+                <button class="count-btn" id="increase">increase</button>
+                <button class="count-btn" id="decrease">decrease</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        const counterInput = document.getElementById("counter");
+        const loadingContainer = document.getElementById("loadingContainer");
+        const countContent = document.getElementById("countContent");
+        const loadingText = document.getElementById("loadingText");
+
+        /**
+         * Show loading spinner with custom text
+         * @param {string} text - Loading text to display
+         */
+        function showLoading(text = "Loading...") {
+            loadingText.textContent = text;
+            loadingContainer.classList.add('show');
+            countContent.classList.add('hidden');
+        }
+
+        /**
+         * Hide loading spinner and show content
+         */
+        function hideLoading() {
+            loadingContainer.classList.remove('show');
+            countContent.classList.remove('hidden');
+        }
+
+        showLoading("wait..")
+        fetch('http://localhost:3000/counter')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(data)
+                number = parseInt(data.counter, 10);
+                counterInput.value = number; // Update UI setelah fetch sukses
+                hideLoading()
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+
+        document.getElementById("increase").addEventListener("click", async () => {
+            showLoading("wait for tx")
+            await fetch('http://localhost:3000/counter/increase', { method: "POST" })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(data)
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+
+            await fetch('http://localhost:3000/counter')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(data)
+                    number = parseInt(data.counter, 10);
+                    counterInput.value = number; // Update UI setelah fetch sukses
+                    hideLoading()
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        })
+
+        document.getElementById("decrease").addEventListener("click", async () => {
+            showLoading("wait for tx")
+            await fetch('http://localhost:3000/counter/decrease', { method: "POST" })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(data)
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+
+            await fetch('http://localhost:3000/counter')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(data)
+                    number = parseInt(data.counter, 10);
+                    counterInput.value = number; // Update UI setelah fetch sukses
+                    hideLoading()
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        })
+    </script>
+</body>
+
+</html>
