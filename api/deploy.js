@@ -5,12 +5,12 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
-const source = fs.readFileSync("index.sol", "utf8");
+const source = fs.readFileSync("contract.sol", "utf8");
 
 const input = {
   language: "Solidity",
   sources: {
-    "index.sol": { content: source },
+    "contract.sol": { content: source },
   },
   settings: {
     outputSelection: {
@@ -22,7 +22,7 @@ const input = {
 };
 
 const output = JSON.parse(solc.compile(JSON.stringify(input)));
-const contractFile = output.contracts["index.sol"]["Counter"];
+const contractFile = output.contracts["contract.sol"]["Counter"];
 
 const abi = contractFile.abi;
 const bytecode = contractFile.evm.bytecode.object;
