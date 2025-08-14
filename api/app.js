@@ -1,5 +1,6 @@
 const express = require("express");
 const Web3 = require("web3");
+const cors = require("cors");
 const contractAbi = require("./index_sol_Counter.json");
 const dotenv = require("dotenv");
 
@@ -14,6 +15,7 @@ const privateKey = process.env.PRIVATE_KEY;
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 const web3 = new Web3(rpcEndPoint);
 const contract = new web3.eth.Contract(contractAbi, contractAdress);
@@ -31,11 +33,14 @@ app.get("/counter", async (req, res) => {
 // Increase counter
 app.post("/counter/increase", async (req, res) => {
   try {
+    const gasEstimate = await contract.methods
+      .increaseValue()
+      .estimateGas({ from: accountAddress });
     const txData = contract.methods.increaseValue().encodeABI();
     const tx = {
       from: accountAddress,
       to: contractAdress,
-      gas: 300000,
+      gas: gasEstimate,
       data: txData,
     };
 
@@ -53,11 +58,14 @@ app.post("/counter/increase", async (req, res) => {
 // Decrease counter
 app.post("/counter/decrease", async (req, res) => {
   try {
+    const gasEstimate = await contract.methods
+      .increaseValue()
+      .estimateGas({ from: accountAddress });
     const txData = contract.methods.decreaseValue().encodeABI();
     const tx = {
       from: accountAddress,
       to: contractAdress,
-      gas: 300000,
+      gas: gasEstimate,
       data: txData,
     };
 
