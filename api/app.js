@@ -1,12 +1,12 @@
 const express = require("express");
 const Web3 = require("web3");
 const cors = require("cors");
-const contractAbi = require("./index_sol_Counter.json");
+const contractAbi = require("./build/contract_sol_Counter.json");
 const dotenv = require("dotenv");
 
 dotenv.config();
 
-const contractAdress = "0xF680e6C9A57DD9BCDEF9B0468935235311a34358";
+const contractAdress = "0xCA3DF2d26E4e0DB36D71fcc7261031f30DE67869";
 const rpcEndPoint =
   "https://sepolia.infura.io/v3/bea95d955f1748b285b97b29815bf4ed";
 
@@ -36,6 +36,7 @@ app.post("/counter/increase", async (req, res) => {
     const gasEstimate = await contract.methods
       .increaseValue()
       .estimateGas({ from: accountAddress });
+
     const txData = contract.methods.increaseValue().encodeABI();
     const tx = {
       from: accountAddress,
@@ -62,6 +63,31 @@ app.post("/counter/decrease", async (req, res) => {
       .increaseValue()
       .estimateGas({ from: accountAddress });
     const txData = contract.methods.decreaseValue().encodeABI();
+    const tx = {
+      from: accountAddress,
+      to: contractAdress,
+      gas: gasEstimate,
+      data: txData,
+    };
+
+    const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey);
+    const receipt = await web3.eth.sendSignedTransaction(
+      signedTx.rawTransaction
+    );
+
+    res.json({ status: "ok", txHash: receipt.transactionHash });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Reset counter
+app.post("/counter/reset", async (req, res) => {
+  try {
+    const gasEstimate = await contract.methods
+      .reset()
+      .estimateGas({ from: accountAddress });
+    const txData = contract.methods.reset().encodeABI();
     const tx = {
       from: accountAddress,
       to: contractAdress,

@@ -12,6 +12,10 @@ contract Counter {
         value = value - 1;
     }
 
+    function reset() public {
+        value = 0;
+    }
+
     function getValue() public view returns (int)  {
         return value;
     }
